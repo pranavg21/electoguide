@@ -198,13 +198,15 @@ export async function POST(request: Request) {
             stopWhen: stepCountIs(3),
           });
 
-          // Forward the AI stream
           const aiStream = result.toUIMessageStream();
           const reader = aiStream.getReader();
           try {
             while (true) {
               const { done, value } = await reader.read();
               if (done) break;
+              if (value && typeof value === 'object' && value.type === 'error') {
+                throw new Error(value.errorText || 'AI Provider Error');
+              }
               writer.write(value);
             }
           } finally {
