@@ -137,7 +137,7 @@ export async function POST(request: Request) {
       component: "ChatAPI",
       messageCount: messages.length,
       inputLength: userText.length,
-      provider: isApiKeyConfigured() ? getProviderName() : "demo",
+      provider: isApiKeyConfigured() ? "google-ai" : "demo",
     });
 
     // ── Demo Mode ─────────────────────────────────────────────────────
