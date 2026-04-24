@@ -181,33 +181,45 @@ export async function POST(request: Request) {
     }
 
     // ── Live Mode (Vertex AI or Google AI Studio) ─────────────────────
-    try {
-      const intent = await classifyIntent(userText);
-      const agentConfig = getAgentConfig(intent);
+    const intent = await classifyIntent(userText);
+    const agentConfig = getAgentConfig(intent);
 
-      const result = streamText({
-        model: agentConfig.model,
-        system: agentConfig.system,
-        messages: await convertToModelMessages(messages),
-        tools: electionTools,
-        temperature: agentConfig.temperature,
-        stopWhen: stepCountIs(3),
-      });
+    // Wrap in a UIMessageStream so we can catch streaming errors
+    // and fall back to demo mode if the AI provider fails
+    const stream = createUIMessageStream({
+      execute: async ({ writer }) => {
+        try {
+          const result = streamText({
+            model: agentConfig.model,
+            system: agentConfig.system,
+            messages: await convertToModelMessages(messages),
+            tools: electionTools,
+            temperature: agentConfig.temperature,
+            stopWhen: stepCountIs(3),
+          });
 
-      return result.toUIMessageStreamResponse();
-    } catch (aiError) {
-      // AI call failed — fall back to demo mode gracefully
-      logger.warn("AI provider failed, falling back to demo mode", {
-        component: "ChatAPI",
-        error: aiError instanceof Error ? aiError.message : String(aiError),
-      });
+          // Forward the AI stream
+          const aiStream = result.toUIMessageStream();
+          const reader = aiStream.getReader();
+          try {
+            while (true) {
+              const { done, value } = await reader.read();
+              if (done) break;
+              writer.write(value);
+            }
+          } finally {
+            reader.releaseLock();
+          }
+        } catch (aiError) {
+          // AI provider failed — fall back to demo content
+          logger.warn("AI provider failed, falling back to demo mode", {
+            component: "ChatAPI",
+            error: aiError instanceof Error ? aiError.message : String(aiError),
+          });
 
-      const intent = await classifyIntent(userText);
-      const demoText = getDemoText(intent);
-      const toolInfo = getToolData(intent);
+          const demoText = getDemoText(intent);
+          const toolInfo = getToolData(intent);
 
-      const stream = createUIMessageStream({
-        execute: async ({ writer }) => {
           const textId = `fallback-text-${Date.now()}`;
           writer.write({ type: "text-start", id: textId });
           const chunks = demoText.match(/.{1,12}/g) || [demoText];
@@ -231,10 +243,10 @@ export async function POST(request: Request) {
               output: toolInfo.data,
             });
           }
-        },
-      });
-      return createUIMessageStreamResponse({ stream });
-    }
+        }
+      },
+    });
+    return createUIMessageStreamResponse({ stream });
   } catch (error) {
     logger.error("Chat API request failed", {
       component: "ChatAPI",
