@@ -181,19 +181,60 @@ export async function POST(request: Request) {
     }
 
     // ── Live Mode (Vertex AI or Google AI Studio) ─────────────────────
-    const intent = await classifyIntent(userText);
-    const agentConfig = getAgentConfig(intent);
+    try {
+      const intent = await classifyIntent(userText);
+      const agentConfig = getAgentConfig(intent);
 
-    const result = streamText({
-      model: agentConfig.model,
-      system: agentConfig.system,
-      messages: await convertToModelMessages(messages),
-      tools: electionTools,
-      temperature: agentConfig.temperature,
-      stopWhen: stepCountIs(3),
-    });
+      const result = streamText({
+        model: agentConfig.model,
+        system: agentConfig.system,
+        messages: await convertToModelMessages(messages),
+        tools: electionTools,
+        temperature: agentConfig.temperature,
+        stopWhen: stepCountIs(3),
+      });
 
-    return result.toUIMessageStreamResponse();
+      return result.toUIMessageStreamResponse();
+    } catch (aiError) {
+      // AI call failed — fall back to demo mode gracefully
+      logger.warn("AI provider failed, falling back to demo mode", {
+        component: "ChatAPI",
+        error: aiError instanceof Error ? aiError.message : String(aiError),
+      });
+
+      const intent = await classifyIntent(userText);
+      const demoText = getDemoText(intent);
+      const toolInfo = getToolData(intent);
+
+      const stream = createUIMessageStream({
+        execute: async ({ writer }) => {
+          const textId = `fallback-text-${Date.now()}`;
+          writer.write({ type: "text-start", id: textId });
+          const chunks = demoText.match(/.{1,12}/g) || [demoText];
+          for (const chunk of chunks) {
+            writer.write({ type: "text-delta", id: textId, delta: chunk });
+            await new Promise((r) => setTimeout(r, 15));
+          }
+          writer.write({ type: "text-end", id: textId });
+
+          if (toolInfo) {
+            const toolCallId = `fallback-${intent.toLowerCase()}-${Date.now()}`;
+            writer.write({
+              type: "tool-input-available",
+              toolCallId,
+              toolName: toolInfo.name,
+              input: toolInfo.data,
+            });
+            writer.write({
+              type: "tool-output-available",
+              toolCallId,
+              output: toolInfo.data,
+            });
+          }
+        },
+      });
+      return createUIMessageStreamResponse({ stream });
+    }
   } catch (error) {
     logger.error("Chat API request failed", {
       component: "ChatAPI",
