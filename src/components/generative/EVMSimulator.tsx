@@ -41,7 +41,7 @@ export function EVMSimulator({ data }: { data: EVMSimulatorOutput }): React.JSX.
 
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-      className="w-full rounded-2xl border border-blue-500/20 bg-gradient-to-br from-blue-950/40 via-slate-900/60 to-indigo-950/40 backdrop-blur-xl p-6 shadow-2xl">
+      className="w-full rounded-2xl border border-blue-200 dark:border-blue-500/20 bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-blue-950/40 dark:via-slate-900/60 dark:to-indigo-950/40 backdrop-blur-xl p-6 shadow-lg dark:shadow-2xl">
       <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2 mb-2">
         <div className="p-1.5 rounded-lg bg-blue-500/20">🗳️</div>
         {data.title}

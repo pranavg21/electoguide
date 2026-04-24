@@ -39,7 +39,7 @@ export function ActionChecklist({ data }: { data: ChecklistOutput }): React.JSX.
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      className="w-full rounded-2xl border border-amber-500/20 bg-gradient-to-br from-amber-950/40 via-slate-900/60 to-orange-950/40 backdrop-blur-xl p-6 shadow-2xl shadow-amber-500/5">
+      className="w-full rounded-2xl border border-amber-200 dark:border-amber-500/20 bg-gradient-to-br from-amber-50 via-white to-orange-50 dark:from-amber-950/40 dark:via-slate-900/60 dark:to-orange-950/40 backdrop-blur-xl p-6 shadow-lg dark:shadow-2xl dark:shadow-amber-500/5">
       <div className="flex items-start justify-between mb-4">
         <div>
           <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">

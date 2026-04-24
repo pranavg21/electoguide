@@ -56,7 +56,7 @@ export function Form6Wizard({ data }: { data: Form6WizardOutput }): React.JSX.El
     const isEligible = true;
     return (
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-        className="w-full rounded-2xl border border-emerald-500/20 bg-gradient-to-br from-emerald-950/40 via-slate-900/60 to-teal-950/40 backdrop-blur-xl p-6 shadow-2xl">
+        className="w-full rounded-2xl border border-emerald-200 dark:border-emerald-500/20 bg-gradient-to-br from-emerald-50 via-white to-teal-50 dark:from-emerald-950/40 dark:via-slate-900/60 dark:to-teal-950/40 backdrop-blur-xl p-6 shadow-lg dark:shadow-2xl">
         <div className="text-center mb-6">
           <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", delay: 0.2 }}
             className={cn("inline-flex p-4 rounded-full mb-4", isEligible ? "bg-emerald-500/20" : "bg-amber-500/20")}>
@@ -125,7 +125,7 @@ export function Form6Wizard({ data }: { data: Form6WizardOutput }): React.JSX.El
 
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-      className="w-full rounded-2xl border border-orange-500/20 bg-gradient-to-br from-orange-950/30 via-slate-900/60 to-green-950/30 backdrop-blur-xl p-6 shadow-2xl">
+      className="w-full rounded-2xl border border-orange-200 dark:border-orange-500/20 bg-gradient-to-br from-orange-50 via-white to-green-50 dark:from-orange-950/30 dark:via-slate-900/60 dark:to-green-950/30 backdrop-blur-xl p-6 shadow-lg dark:shadow-2xl">
       <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2 mb-4">
         <div className="p-1.5 rounded-lg bg-orange-500/20"><ShieldCheck className="h-4 w-4 text-orange-400" /></div>
         Form 6 — Voter Registration Check

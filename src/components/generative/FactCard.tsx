@@ -20,7 +20,7 @@ export function FactCard({ data }: { data: FactCardOutput }): React.JSX.Element 
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      className="w-full rounded-2xl border border-cyan-500/20 bg-gradient-to-br from-cyan-950/40 via-slate-900/60 to-blue-950/40 backdrop-blur-xl p-6 shadow-2xl shadow-cyan-500/5">
+      className="w-full rounded-2xl border border-cyan-200 dark:border-cyan-500/20 bg-gradient-to-br from-cyan-50 via-white to-blue-50 dark:from-cyan-950/40 dark:via-slate-900/60 dark:to-blue-950/40 backdrop-blur-xl p-6 shadow-lg dark:shadow-2xl dark:shadow-cyan-500/5">
       <div className="mb-4">
         <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
           <div className="p-1.5 rounded-lg bg-cyan-500/20">

@@ -28,7 +28,7 @@ export function InteractiveTimeline({ data }: { data: ConstituencyRoadmap }): Re
     <motion.div
       initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      className="w-full rounded-2xl border border-indigo-500/20 bg-gradient-to-br from-indigo-950/40 via-slate-900/60 to-purple-950/40 backdrop-blur-xl p-6 shadow-2xl shadow-indigo-500/5"
+      className="w-full rounded-2xl border border-indigo-200 dark:border-indigo-500/20 bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-indigo-950/40 dark:via-slate-900/60 dark:to-purple-950/40 backdrop-blur-xl p-6 shadow-lg dark:shadow-2xl dark:shadow-indigo-500/5"
     >
       <div className="mb-6">
         <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
