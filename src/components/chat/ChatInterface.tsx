@@ -9,6 +9,8 @@ import { cn } from "@/lib/utils";
 import { type Language, LANGUAGES, t, getChips } from "@/lib/i18n";
 import { useVoiceInput } from "@/hooks/useVoiceInput";
 import { useTTS } from "@/hooks/useTTS";
+import { useAnalytics } from "@/hooks/useAnalytics";
+import { FeedbackButton } from "@/components/ui/FeedbackButton";
 import { MessageBubble, TypingIndicator } from "./MessageBubble";
 import { InteractiveTimeline } from "@/components/generative/InteractiveTimeline";
 import { Form6Wizard } from "@/components/generative/Form6Wizard";
@@ -58,6 +60,7 @@ export function ChatInterface(): React.JSX.Element {
   const langConfig = LANGUAGES.find(l => l.code === lang) || LANGUAGES[0];
 
   const { speak } = useTTS(langConfig.speechCode);
+  const { track } = useAnalytics(lang);
 
   const handleVoiceResult = useCallback((transcript: string) => {
     setInput(transcript);
@@ -94,11 +97,15 @@ export function ChatInterface(): React.JSX.Element {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || isLoading) return;
+    track("chat_message_sent", { message_length: input.trim().length, language: lang });
     sendMessage({ text: input.trim() });
     setInput("");
   };
 
-  const handleChipSelect = (prompt: string) => sendMessage({ text: prompt });
+  const handleChipSelect = (prompt: string) => {
+    track("chip_selected", { chip_key: prompt.slice(0, 30), language: lang });
+    sendMessage({ text: prompt });
+  };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSubmit(e); }
@@ -179,6 +186,12 @@ export function ChatInterface(): React.JSX.Element {
                   {toolParts.map((part, i) => renderToolPart(part, i))}
                 </div>
               )}
+              {message.role === "assistant" && textContent && status !== "streaming" && (
+                <div className="ml-11">
+                  <FeedbackButton messageId={message.id} language={lang}
+                    toolName={toolParts.length > 0 ? toolParts[0].type.replace("tool-", "") : undefined} />
+                </div>
+              )}
             </div>
           );
         })}
@@ -193,7 +206,7 @@ export function ChatInterface(): React.JSX.Element {
         {/* Language selector */}
         <div className="flex justify-center gap-2 mb-2">
           {LANGUAGES.map(l => (
-            <button key={l.code} onClick={() => setLang(l.code)}
+            <button key={l.code} onClick={() => { track("language_changed", { from_language: lang, to_language: l.code }); setLang(l.code); }}
               className={cn("text-xs px-3 py-1 rounded-full border transition-all",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-400",
                 lang === l.code ? "bg-orange-500/20 border-orange-500/30 text-orange-300" : "bg-slate-900/5 dark:bg-white/5 border-slate-900/10 dark:border-white/10 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:text-slate-200")}

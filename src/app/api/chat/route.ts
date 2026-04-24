@@ -8,6 +8,7 @@ import {
   type UIMessage,
 } from "ai";
 import { electionTools } from "@/ai/tools";
+import { sanitizeInput } from "@/lib/utils";
 import {
   routerModel,
   explainerModel,
@@ -36,25 +37,14 @@ import type {
   ConstituencyRoadmap,
   ChecklistOutput,
 } from "@/lib/schemas";
+import { logger } from "@/lib/logger";
 
 export const maxDuration = 60;
 
-/** Maximum allowed length for a single user message (characters) */
-const MAX_MESSAGE_LENGTH = 2000;
 /** Maximum allowed number of messages in a conversation */
 const MAX_CONVERSATION_LENGTH = 50;
 
 type Intent = "FORM6" | "EVM_INFO" | "LIVE_ELECTION" | "CHECKLIST" | "EXPLAIN";
-
-/** Sanitize user input by stripping potentially dangerous characters */
-function sanitizeInput(text: string): string {
-  return text
-    .replace(/<[^>]*>/g, "")     // Strip HTML tags
-    .replace(/javascript:/gi, "") // Strip JS protocol
-    .replace(/on\w+=/gi, "")     // Strip event handlers
-    .trim()
-    .slice(0, MAX_MESSAGE_LENGTH);
-}
 
 async function classifyIntent(userMessage: string): Promise<Intent> {
   if (!isApiKeyConfigured()) {
@@ -143,6 +133,13 @@ export async function POST(request: Request) {
       return new Response(JSON.stringify({ error: "Message cannot be empty." }), { status: 400, headers: { "Content-Type": "application/json" } });
     }
 
+    logger.info("Chat request received", {
+      component: "ChatAPI",
+      messageCount: messages.length,
+      inputLength: userText.length,
+      provider: isApiKeyConfigured() ? getProviderName() : "demo",
+    });
+
     // ── Demo Mode ─────────────────────────────────────────────────────
     if (!isApiKeyConfigured()) {
       const intent = await classifyIntent(userText);
@@ -198,14 +195,11 @@ export async function POST(request: Request) {
 
     return result.toUIMessageStreamResponse();
   } catch (error) {
-    // Structured error logging pattern
-    const errorLog = {
-      timestamp: new Date().toISOString(),
-      service: "ChatAPI",
+    logger.error("Chat API request failed", {
+      component: "ChatAPI",
       error: error instanceof Error ? error.message : String(error),
       stack: error instanceof Error ? error.stack : undefined,
-    };
-    console.error(JSON.stringify(errorLog, null, 2));
+    });
     
     return new Response(JSON.stringify({ error: "An error occurred. Please try again." }), { status: 500, headers: { "Content-Type": "application/json" } });
   }

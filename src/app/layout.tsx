@@ -35,13 +35,17 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${inter.variable} h-full dark`}>
+    <html lang="en" dir="ltr" className={`${inter.variable} h-full dark`}>
       <head>
         <link rel="apple-touch-icon" href="/icons/icon-192.png" />
       </head>
       <body className="h-full flex flex-col bg-grid">
         <a href="#main-content" className="skip-link">Skip to content</a>
-        {children}
+        {/* Screen reader live region for dynamic announcements */}
+        <div id="sr-announcer" className="sr-only" aria-live="assertive" aria-atomic="true" role="status" />
+        <main id="main-content" className="flex-1 flex flex-col" role="main">
+          {children}
+        </main>
       </body>
     </html>
   );
